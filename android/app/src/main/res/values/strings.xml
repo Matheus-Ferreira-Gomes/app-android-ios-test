@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">App Teste-AN-IOS</string>
+    <string name="title_activity_main">App Teste-AN-IOS</string>
+    <string name="package_name">com.teste.ios_an_app</string>
+    <string name="custom_url_scheme">com.teste.ios_an_app</string>
+</resources>
