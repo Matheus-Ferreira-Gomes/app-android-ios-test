@@ -39,8 +39,8 @@ workflows:
     scripts:
       - name: Set up Node.js
         script: |
-          nvm install 14
-          nvm use 14
+          nvm install 18
+          nvm use 18
           npm install -g @ionic/cli
       - name: Install Dependencies
         script: |
