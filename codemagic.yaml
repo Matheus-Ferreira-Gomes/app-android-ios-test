@@ -1,5 +1,51 @@
 workflows:
-  hello-world:
-    name: Hello world workflow
+  ios-build:
+    name: iOS Build
+    environment:
+      groups:
+        - ios # Grupo contendo as chaves e certificações necessárias para buildar no iOS
+      xcode: latest
     scripts:
-        - echo "Hello World!"
+      - name: Set up Node.js
+        script: |
+          # Instalar a versão específica do Node.js
+          nvm install 14
+          nvm use 14
+          npm install -g @ionic/cli
+      - name: Install Dependencies
+        script: |
+          npm install
+          npx cap sync ios
+      - name: Build iOS App
+        script: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos clean build
+    artifacts:
+      - build/ios
+    publishing:
+      scripts:
+        - name: Publish to App Store Connect
+          script: |
+            # Use a ferramenta Fastlane para publicar o app
+            bundle install
+            fastlane ios release
+
+  tests:
+    name: Run Tests
+    environment:
+      groups:
+        - ios
+      xcode: latest
+    scripts:
+      - name: Set up Node.js
+        script: |
+          nvm install 14
+          nvm use 14
+          npm install -g @ionic/cli
+      - name: Install Dependencies
+        script: |
+          npm install
+          npx cap sync ios
+      - name: Run Tests
+        script: |
+          npm run test
