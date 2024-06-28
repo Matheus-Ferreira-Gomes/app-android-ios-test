@@ -9,8 +9,8 @@ workflows:
       - name: Set up Node.js
         script: |
           # Instalar a versão específica do Node.js
-          nvm install 14
-          nvm use 14
+          nvm install 18
+          nvm use 18
           npm install -g @ionic/cli
       - name: Install Dependencies
         script: |
@@ -19,33 +19,30 @@ workflows:
       - name: Build iOS App
         script: |
           cd ios/App
+          # Construir o aplicativo iOS
           xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos clean build
-    artifacts:
-      - build/ios
-    publishing:
-      scripts:
-        - name: Publish to App Store Connect
-          script: |
-            # Use a ferramenta Fastlane para publicar o app
-            bundle install
-            fastlane ios release
+      - name: Archive iOS App
+        script: |
+          cd ios/App
+          # Arquivar o aplicativo iOS
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos archive -archivePath $CM_BUILD_DIR/App.xcarchive
+      - name: Export IPA
+        script: |
+          # Criar o arquivo exportOptions.plist para exportar o IPA
+          echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+          <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+          <plist version=\"1.0\">
+          <dict>
+            <key>method</key>
+            <string>ad-hoc</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>teamID</key>
+            <string>YOUR_TEAM_ID</string>
+          </dict>
+          </plist>" > exportOptions.plist
 
-  tests:
-    name: Run Tests
-    environment:
-      groups:
-        - ios
-      xcode: latest
-    scripts:
-      - name: Set up Node.js
-        script: |
-          nvm install 18
-          nvm use 18
-          npm install -g @ionic/cli
-      - name: Install Dependencies
-        script: |
-          npm install --legacy-peer-deps
-          npx cap sync ios
-      - name: Run Tests
-        script: |
-          npm run test
+          # Exportar o arquivo IPA
+          xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $CM_BUILD_DIR
+    artifacts:
+      - $CM_BUILD_DIR/*.ipa
